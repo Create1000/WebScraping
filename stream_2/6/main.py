@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-import sqlite3
 
 
 def scrape_bbc_sport():
@@ -19,7 +18,7 @@ def scrape_bbc_sport():
 
     soup = BeautifulSoup(response.text, 'lxml')
 
-    # Search the article
+    # Search the articlec
     articles = soup.find_all('a', class_='ssrcss-vdnb7q-PromoLink', limit=5)
     data = []
 
@@ -32,9 +31,17 @@ def scrape_bbc_sport():
         # Search Related Topics
         metadata = article.find_next('ul', class_='ssrcss-1ik71mx-MetadataStripContainer')
         if metadata:
-            topics = [
-                topic.text.strip() for topic in metadata.find_all('span', class_='ssrcss-1if1g9v-MetadataText')
-            ]
+            topics = []
+            for topic in metadata.find_all('span', class_='ssrcss-1if1g9v-MetadataText'):
+                text = topic.text.strip()
+                # time & IDs
+                if (
+                    "hour ago" not in text and
+                    "hours ago" not in text and
+                    "minute ago" not in text and
+                    not text.isdigit()
+                ):
+                    topics.append(text)
         else:
             topics = []
 
@@ -48,7 +55,8 @@ def scrape_bbc_sport():
     with open('bbc_sport_topics.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-    print(f"{len(data)} Articles have been saved in 'bbc_sport_topics.json'.")
+    print(f"{len(data)} Articles have been saved in 'bbc_sport_topics.json' gespeichert.")
+
 
 if __name__ == '__main__':
     scrape_bbc_sport()
